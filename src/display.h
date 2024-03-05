@@ -1,9 +1,12 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <SDL2/SDL.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#define FPS 30
+#define FRAME_TARGET_TIME (1000 / FPS)
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
