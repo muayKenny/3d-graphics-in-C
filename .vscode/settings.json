@@ -2,6 +2,7 @@
   "files.associations": {
     "display.h": "c",
     "mesh.h": "c",
-    "vector.h": "c"
+    "vector.h": "c",
+    "ios": "c"
   }
 }
