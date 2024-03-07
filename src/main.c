@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 //  Array of triangles that should be rendered frame by frame
 triangle_t *triangles_to_render = NULL;
@@ -34,7 +35,8 @@ void setup(void) {
                           SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
     // loads the cube values into the mesh data structure
-    load_cube_mesh_data();
+    // load_cube_mesh_data();
+    load_obj_file_data("./assets/cube.obj");
 }
 
 void process_input(void) {
