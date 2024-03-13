@@ -11,7 +11,7 @@
 //  Array of triangles that should be rendered frame by frame
 triangle_t *triangles_to_render = NULL;
 
-vec3_t camera_position = {.x = 0, .y = 0, .z = -10};
+vec3_t camera_position = {0, 0, 0};
 
 float fov_factor = 640;
 
@@ -36,7 +36,7 @@ void setup(void) {
 
     // loads the cube values into the mesh data structure
     // load_cube_mesh_data();
-    load_obj_file_data("./assets/cube.obj");
+    load_obj_file_data("./assets/f22.obj");
 }
 
 void process_input(void) {
@@ -71,9 +71,9 @@ void update(void) {
 
     triangles_to_render = NULL;
 
-    mesh.rotation.x += 0.015;
-    mesh.rotation.y += 0.015;
-    mesh.rotation.z += 0.015;
+    mesh.rotation.x += 0.01;
+    mesh.rotation.y += 0.0;
+    mesh.rotation.z += 0.0;
 
     int num_faces = array_length(mesh.faces);
 
@@ -86,9 +86,9 @@ void update(void) {
         face_vertices[1] = mesh.vertices[mesh_face.b - 1];
         face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
-        triangle_t projected_triangle;
         // loop all three vertices of this current face and apply
         // transformations
+        vec3_t transformed_vertices[3];
         for (int j = 0; j < 3; j++) {
             vec3_t transformed_vertex = face_vertices[j];
 
@@ -97,10 +97,48 @@ void update(void) {
             transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
 
             // translate the vertex away from the camera
-            transformed_vertex.z -= camera_position.z;
+            transformed_vertex.z += 5;
 
+            transformed_vertices[j] = transformed_vertex;
+        }
+
+        // Check Backface Culling Algorithm (5)
+        vec3_t vector_a = transformed_vertices[0];
+        vec3_t vector_b = transformed_vertices[1];
+        vec3_t vector_c = transformed_vertices[2];
+
+        // 1. Find vectors B-A and C-A
+        vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+        vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+        vec3_normalize(&vector_ab);
+        vec3_normalize(&vector_ac);
+
+        // 2. Take their cross product and find the perpendicular normal N
+        vec3_t normal = vec3_cross(vector_ab, vector_ac);
+
+        // normalize the face normal vector
+        vec3_normalize(&normal);
+
+        // 3. Find the Camera Ray vector by subtracting the Camera Position from
+        // Point A
+        vec3_t camera_ray = vec3_sub(camera_position, vector_a);
+
+        // 4. Take the Dot Product between normal N and the Camera Ray
+        float dot_normal_camera = vec3_dot(normal, camera_ray);
+
+        // 5. If this dot product is less than zero, then do not display the face
+
+        if (dot_normal_camera < 0) {
+            // bypass the rest of the function
+            continue;
+        }
+
+        // Loop all three vertices to perform projection
+        triangle_t projected_triangle;
+        for (int j = 0; j < 3; j++) {
+            vec3_t vertex_to_project = transformed_vertices[j];
             // project current vertex
-            vec2_t projected_point = project(transformed_vertex);
+            vec2_t projected_point = project(vertex_to_project);
 
             // Scale and translate projected points to the middle of the screen.
 
@@ -123,15 +161,19 @@ void render(void) {
     for (int i = 0; i < num_triangles; i++) {
         triangle_t triangle = triangles_to_render[i];
 
-        draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFFFFF00);
-        draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFFFFF00);
-        draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFFFFF00);
-
         draw_triangle(
 
             triangle.points[0].x, triangle.points[0].y, triangle.points[1].x,
             triangle.points[1].y, triangle.points[2].x, triangle.points[2].y,
-            0xFFFFFF00
+            0xFF000000
+
+        );
+
+        draw_filled_triangle(
+
+            triangle.points[0].x, triangle.points[0].y, triangle.points[1].x,
+            triangle.points[1].y, triangle.points[2].x, triangle.points[2].y,
+            0xFFFFFFFF
 
         );
     }
