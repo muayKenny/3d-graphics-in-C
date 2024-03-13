@@ -38,9 +38,10 @@ void setup(void) {
         SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                           SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
+    load_cube_mesh_data();
     // loads the cube values into the mesh data structure
     // load_obj_file_data("./assets/cube.obj");
-    load_obj_file_data("./assets/f22.obj");
+    // load_obj_file_data("./assets/f22.obj");
 }
 
 void process_input(void) {
@@ -164,22 +165,57 @@ void update(void) {
         }
 
         // Loop all three vertices to perform projection
-        triangle_t projected_triangle;
+        vec2_t projected_points[3];
         for (int j = 0; j < 3; j++) {
-            vec3_t vertex_to_project = transformed_vertices[j];
+
             // project current vertex
-            vec2_t projected_point = project(vertex_to_project);
+            projected_points[j] = project(transformed_vertices[j]);
 
             // Scale and translate projected points to the middle of the screen.
 
-            projected_point.x += (window_width / 2);
-            projected_point.y += (window_height / 2);
-
-            projected_triangle.points[j] = projected_point;
+            projected_points[j].x += (window_width / 2);
+            projected_points[j].y += (window_height / 2);
         }
+
+        // Calculate the average depth for each face based on the vertices after
+        // transformation
+
+        float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z +
+                           transformed_vertices[2].z) /
+                          3;
+
+        triangle_t projected_triangle = {
+            .points =
+                {
+
+                    {projected_points[0].x, projected_points[0].y},
+                    {projected_points[1].x, projected_points[1].y},
+                    {projected_points[2].x, projected_points[2].y}
+
+                },
+            .avg_depth = avg_depth,
+            .color = mesh_face.color
+
+        };
 
         //  save the projected triangle in the array of triangles to render.
         array_push(triangles_to_render, projected_triangle);
+    }
+
+    // Hacky Painters Algorithm -> Sort Array of Faces by avg_depth
+
+    // Bubble Sort
+    int num_triangles = array_length(triangles_to_render);
+    for (int i = 0; i < num_triangles; i++) {
+        for (int j = i; j < num_triangles; j++) {
+            if (triangles_to_render[i].avg_depth <
+                triangles_to_render[j].avg_depth) {
+                // swap triangle positions in the array
+                triangle_t temp = triangles_to_render[i];
+                triangles_to_render[i] = triangles_to_render[j];
+                triangles_to_render[j] = temp;
+            }
+        }
     }
 }
 
@@ -218,7 +254,7 @@ void render(void) {
 
                 triangle.points[0].x, triangle.points[0].y, triangle.points[1].x,
                 triangle.points[1].y, triangle.points[2].x, triangle.points[2].y,
-                0xFF555555
+                triangle.color
 
             );
         }
