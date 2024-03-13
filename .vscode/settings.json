@@ -3,6 +3,9 @@
     "display.h": "c",
     "mesh.h": "c",
     "vector.h": "c",
-    "ios": "c"
+    "ios": "c",
+    "math.h": "c",
+    "stdint.h": "c",
+    "stdbool.h": "c"
   }
 }

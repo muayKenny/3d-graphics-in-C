@@ -8,7 +8,7 @@ void int_swap(int *a, int *b) {
 }
 
 void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                               uint32_t color) {
+                               color_t color) {
     // calculate slope_0 and slope_1
     float inv_slope_1 = (float)(x1 - x0) / (y1 - y0);
     float inv_slope_2 = (float)(x2 - x0) / (y2 - y0);
@@ -27,7 +27,7 @@ void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
 }
 
 void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                            uint32_t color) {
+                            color_t color) {
     float inv_slope_1 = (float)(x2 - x0) / (y2 - y0);
     float inv_slope_2 = (float)(x2 - x1) / (y2 - y1);
 
@@ -44,7 +44,7 @@ void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
 }
 
 void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                          uint32_t color) {
+                          color_t color) {
     // sort vertices by y-coord ascending (y0 < y1 < y2)
     if (y0 > y1) {
         int_swap(&y0, &y1);
