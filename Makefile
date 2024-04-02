@@ -1,5 +1,6 @@
 build:
-	gcc -Wall -std=c99 ./src/*.c -lSDL2 -lm -o renderer
+	gcc -Wall -std=c99 -arch arm64 -I/opt/homebrew/include ./src/*.c -L/opt/homebrew/lib -lSDL2 -lm -o renderer
+
 
 run:
 	./renderer
