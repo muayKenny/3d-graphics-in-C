@@ -6,6 +6,7 @@
     "ios": "c",
     "math.h": "c",
     "stdint.h": "c",
-    "stdbool.h": "c"
+    "stdbool.h": "c",
+    "matrix.h": "c"
   }
 }

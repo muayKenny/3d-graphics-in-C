@@ -1,5 +1,6 @@
 #include "array.h"
 #include "display.h"
+#include "matrix.h"
 #include "mesh.h"
 #include "vector.h"
 #include <SDL2/SDL.h>
@@ -100,9 +101,23 @@ void update(void) {
 
     triangles_to_render = NULL;
 
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.0;
-    mesh.rotation.z += 0.0;
+    mesh.scale.x += 0.002;
+    mesh.scale.y += 0.001;
+
+    mesh.translation.x += 0.001;
+    mesh.translation.z = 5.0;
+
+    mesh.rotation.x += 0.02;
+    mesh.rotation.y += 0.02;
+
+    // Create a scale, translation, & rotation matrix that will be used to multiply
+    // the mesh vertices
+    mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    mat4_t translation_matrix = mat4_make_translation(
+        mesh.translation.x, mesh.translation.y, mesh.translation.z);
+    mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh.translation.x);
+    mat4_t rotation_matrix_y = mat4_make_rotation_y(mesh.translation.y);
+    mat4_t rotation_matrix_z = mat4_make_rotation_z(mesh.translation.z);
 
     int num_faces = array_length(mesh.faces);
 
@@ -117,25 +132,30 @@ void update(void) {
 
         // loop all three vertices of this current face and apply
         // transformations
-        vec3_t transformed_vertices[3];
+        vec4_t transformed_vertices[3];
         for (int j = 0; j < 3; j++) {
-            vec3_t transformed_vertex = face_vertices[j];
+            vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
 
-            transformed_vertex = vec3_rotate_x(transformed_vertex, mesh.rotation.x);
-            transformed_vertex = vec3_rotate_y(transformed_vertex, mesh.rotation.y);
-            transformed_vertex = vec3_rotate_z(transformed_vertex, mesh.rotation.z);
+            transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
 
-            // translate the vertex away from the camera
-            transformed_vertex.z += 5;
+            transformed_vertex =
+                mat4_mul_vec4(rotation_matrix_x, transformed_vertex);
+            transformed_vertex =
+                mat4_mul_vec4(rotation_matrix_y, transformed_vertex);
+            transformed_vertex =
+                mat4_mul_vec4(rotation_matrix_z, transformed_vertex);
+
+            transformed_vertex =
+                mat4_mul_vec4(translation_matrix, transformed_vertex);
 
             transformed_vertices[j] = transformed_vertex;
         }
 
         if (cull_method == CULL_BACKFACE) {
             // Check Backface Culling Algorithm (5)
-            vec3_t vector_a = transformed_vertices[0];
-            vec3_t vector_b = transformed_vertices[1];
-            vec3_t vector_c = transformed_vertices[2];
+            vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+            vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+            vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
 
             // 1. Find vectors B-A and C-A
             vec3_t vector_ab = vec3_sub(vector_b, vector_a);
@@ -169,7 +189,7 @@ void update(void) {
         for (int j = 0; j < 3; j++) {
 
             // project current vertex
-            projected_points[j] = project(transformed_vertices[j]);
+            projected_points[j] = project(vec3_from_vec4(transformed_vertices[j]));
 
             // Scale and translate projected points to the middle of the screen.
 
