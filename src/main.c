@@ -1,5 +1,6 @@
 #include "array.h"
 #include "display.h"
+#include "light.h"
 #include "matrix.h"
 #include "mesh.h"
 #include "vector.h"
@@ -46,10 +47,10 @@ void setup(void) {
     float zfar = 100.0;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
-    load_cube_mesh_data();
+    // load_cube_mesh_data();
     // loads the cube values into the mesh data structure
     // load_obj_file_data("./assets/cube.obj");
-    // load_obj_file_data("./assets/f22.obj");
+    load_obj_file_data("./assets/f22.obj");
 }
 
 void process_input(void) {
@@ -157,33 +158,32 @@ void update(void) {
             transformed_vertices[j] = transformed_vertex;
         }
 
+        // Check Backface Culling Algorithm (5)
+        vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
+        vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
+        vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
+
+        // 1. Find vectors B-A and C-A
+        vec3_t vector_ab = vec3_sub(vector_b, vector_a);
+        vec3_t vector_ac = vec3_sub(vector_c, vector_a);
+        vec3_normalize(&vector_ab);
+        vec3_normalize(&vector_ac);
+
+        // 2. Take their cross product and find the perpendicular normal N
+        vec3_t normal = vec3_cross(vector_ab, vector_ac);
+
+        // normalize the face normal vector
+        vec3_normalize(&normal);
+
+        // 3. Find the Camera Ray vector by subtracting the Camera Position from
+        // Point A
+        vec3_t camera_ray = vec3_sub(camera_position, vector_a);
+
+        // 4. Take the Dot Product between normal N and the Camera Ray
+        float dot_normal_camera = vec3_dot(normal, camera_ray);
+
+        // 5. If this dot product is less than zero, then do not display the face
         if (cull_method == CULL_BACKFACE) {
-            // Check Backface Culling Algorithm (5)
-            vec3_t vector_a = vec3_from_vec4(transformed_vertices[0]);
-            vec3_t vector_b = vec3_from_vec4(transformed_vertices[1]);
-            vec3_t vector_c = vec3_from_vec4(transformed_vertices[2]);
-
-            // 1. Find vectors B-A and C-A
-            vec3_t vector_ab = vec3_sub(vector_b, vector_a);
-            vec3_t vector_ac = vec3_sub(vector_c, vector_a);
-            vec3_normalize(&vector_ab);
-            vec3_normalize(&vector_ac);
-
-            // 2. Take their cross product and find the perpendicular normal N
-            vec3_t normal = vec3_cross(vector_ab, vector_ac);
-
-            // normalize the face normal vector
-            vec3_normalize(&normal);
-
-            // 3. Find the Camera Ray vector by subtracting the Camera Position from
-            // Point A
-            vec3_t camera_ray = vec3_sub(camera_position, vector_a);
-
-            // 4. Take the Dot Product between normal N and the Camera Ray
-            float dot_normal_camera = vec3_dot(normal, camera_ray);
-
-            // 5. If this dot product is less than zero, then do not display the face
-
             if (dot_normal_camera < 0) {
                 // cull face by bypassing the rest of the function
                 continue;
@@ -202,6 +202,9 @@ void update(void) {
             projected_points[j].x *= (window_width / 2.0);
             projected_points[j].y *= (window_height / 2.0);
 
+            // Invert the Y values because our obj comes with it's Y Values flipped
+            projected_points[j].y *= -1;
+
             // translate projected points to the middle of the screen.
             projected_points[j].x += (window_width / 2.0);
             projected_points[j].y += (window_height / 2.0);
@@ -213,6 +216,12 @@ void update(void) {
         float avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z +
                            transformed_vertices[2].z) /
                           3;
+        // Calculate the shade intensity based on how aligned is the face normal and
+        // the light ray
+        float light_intensity_factor = -vec3_dot(normal, light.direction);
+
+        uint32_t triangle_color =
+            light_apply_intensity(mesh_face.color, light_intensity_factor);
 
         triangle_t projected_triangle = {
             .points =
@@ -224,7 +233,7 @@ void update(void) {
 
                 },
             .avg_depth = avg_depth,
-            .color = mesh_face.color
+            .color = triangle_color
 
         };
 
