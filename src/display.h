@@ -36,9 +36,6 @@ void draw_rect(int x, int y, int width, int height, color_t color);
 void draw_pixel(int x, int y, color_t color);
 void draw_line(int x0, int y0, int x1, int y1, color_t color);
 void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color);
-void draw_textured_triangle(int x0, int y0, float u0, float v0, int x1, int y1,
-                            float u1, float v1, int x2, int y2, float u2, float v2,
-                            uint32_t *texture);
 void render_color_buffer(void);
 void clear_color_buffer(color_t color);
 void destroy_window(void);

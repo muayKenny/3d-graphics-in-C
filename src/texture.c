@@ -1,7 +1,8 @@
+#include "display.h"
 #include <stdint.h>
 #include <stdio.h>
 
-uint32_t *mesh_texture = NULL;
+color_t *mesh_texture = NULL;
 int texture_width = 64;
 int texture_height = 64;
 

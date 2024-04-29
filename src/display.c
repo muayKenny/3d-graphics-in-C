@@ -109,14 +109,6 @@ void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color
     draw_line(x2, y2, x0, y0, color);
 }
 
-void draw_textured_triangle(int x0, int y0, float u0, float v0, int x1, int y1,
-                            float u1, float v1, int x2, int y2, float u2, float v2,
-                            uint32_t *texture) {
-    // TODO:
-    // Loop all the pixels of the triangle and draw them based on the
-    // texel color that comes from the source texture array.
-}
-
 void destroy_window(void) {
     free(color_buffer);
     SDL_DestroyRenderer(renderer);
