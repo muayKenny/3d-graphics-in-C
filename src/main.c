@@ -54,10 +54,10 @@ void setup(void) {
     texture_width = 64;
     texture_height = 64;
 
-    // load_cube_mesh_data();
+    load_cube_mesh_data();
     // loads the cube values into the mesh data structure
     // load_obj_file_data("./assets/cube.obj");
-    load_obj_file_data("./assets/f22.obj");
+    // load_obj_file_data("./assets/f22.obj");
 }
 
 void process_input(void) {
