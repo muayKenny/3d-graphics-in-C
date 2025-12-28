@@ -10,7 +10,8 @@
 
 typedef uint32_t color_t;
 
-enum cull_method { CULL_NONE, CULL_BACKFACE } cull_method;
+enum cull_method { CULL_NONE, CULL_BACKFACE };
+extern enum cull_method cull_method;
 
 enum render_method {
     RENDER_WIRE,
@@ -19,7 +20,8 @@ enum render_method {
     RENDER_FILL_TRIANGLE_WIRE,
     RENDER_TEXTURED,
     RENDER_TEXTURED_WIRE
-} render_method;
+};
+extern enum render_method render_method;
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;

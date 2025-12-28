@@ -19,6 +19,9 @@ vec3_t camera_position = {.x = 0, .y = 0, .z = 0};
 
 mat4_t proj_matrix;
 
+enum cull_method cull_method;
+enum render_method render_method;
+
 bool is_running = NULL;
 
 int previous_frame_time = 0;
