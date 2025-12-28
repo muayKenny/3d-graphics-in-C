@@ -107,21 +107,32 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
 void draw_texel(int x, int y, color_t *texture, vec4_t point_a, vec4_t point_b,
                 vec4_t point_c, float u0, float v0, float u1, float v1,
                 float u2, float v2) {
-  vec2_t point_p = {x, y};
+  vec2_t p = {x, y};
   vec2_t a = vec2_from_vec4(point_a);
   vec2_t b = vec2_from_vec4(point_b);
   vec2_t c = vec2_from_vec4(point_c);
 
-  vec3_t weights = barycentric_weights(a, b, c, point_p);
+  vec3_t weights = barycentric_weights(a, b, c, p);
 
   float alpha = weights.x;
   float beta = weights.y;
   float gamma = weights.z;
 
   // Perform the interpolation of all U and V values using barycentric weights
-  float interpolated_u = (u0)*alpha + (u1)*beta + (u2)*gamma;
-  float interpolated_v = (v0)*alpha + (v1)*beta + (v2)*gamma;
+  
+  float interpolated_u;
+  float interpolated_v;
 
+  float interpolated_reciprocal_w;
+
+  interpolated_u =(u0 / point_a.w)*alpha + (u1 / point_b.w)*beta + (u2 / point_c.w)*gamma;
+  interpolated_v = (v0 / point_a.w)*alpha + (v1 / point_b.w)*beta + (v2 / point_c.w)*gamma;
+
+  interpolated_reciprocal_w = (1/ point_a.w) * alpha + ( 1/ point_b.w) * beta + (1/ point_c.w) *gamma;
+
+  interpolated_u /= interpolated_reciprocal_w;
+  interpolated_v /= interpolated_reciprocal_w;
+  
   // Map the UV coordinate to the full texture width and height
   int tex_x = abs((int)(interpolated_u * texture_width));
   int tex_y = abs((int)(interpolated_v * texture_height));
