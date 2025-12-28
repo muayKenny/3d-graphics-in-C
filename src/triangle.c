@@ -130,12 +130,25 @@ void draw_texel(int x, int y, color_t *texture, vec4_t point_a, vec4_t point_b,
 
   interpolated_reciprocal_w = (1/ point_a.w) * alpha + ( 1/ point_b.w) * beta + (1/ point_c.w) *gamma;
 
+  if (interpolated_reciprocal_w == 0.0f) {
+    return;
+  }
   interpolated_u /= interpolated_reciprocal_w;
   interpolated_v /= interpolated_reciprocal_w;
+
+  // Clamp UVs to avoid out-of-bounds texture access.
+  if (interpolated_u < 0.0f)
+    interpolated_u = 0.0f;
+  if (interpolated_u > 1.0f)
+    interpolated_u = 1.0f;
+  if (interpolated_v < 0.0f)
+    interpolated_v = 0.0f;
+  if (interpolated_v > 1.0f)
+    interpolated_v = 1.0f;
   
   // Map the UV coordinate to the full texture width and height
-  int tex_x = abs((int)(interpolated_u * texture_width));
-  int tex_y = abs((int)(interpolated_v * texture_height));
+  int tex_x = (int)(interpolated_u * (texture_width - 1));
+  int tex_y = (int)(interpolated_v * (texture_height - 1));
 
   draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
 }
