@@ -352,6 +352,7 @@ void render(void) {
 void free_resources(void) {
   array_free(mesh.faces);
   array_free(mesh.vertices);
+  upng_free(png_texture);
 }
 
 //
