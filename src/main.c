@@ -6,7 +6,9 @@
 #include "texture.h"
 #include "triangle.h"
 #include "vector.h"
+#include "upng.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_pixels.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -41,7 +43,7 @@ void setup(void) {
                     "for color_buffer. \n");
   }
 
-  color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
+  color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
                                            SDL_TEXTUREACCESS_STREAMING,
                                            window_width, window_height);
 
@@ -53,14 +55,15 @@ void setup(void) {
   proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
   // manually load the hardcoded texture data from the literal static array
-  mesh_texture = (uint32_t *)REDBRICK_TEXTURE;
-  texture_width = 64;
-  texture_height = 64;
+  // mesh_texture = (uint32_t *)REDBRICK_TEXTURE;
+  // texture_width = 64;
+  // texture_height = 64;
 
   load_cube_mesh_data();
   // loads the cube values into the mesh data structure
   // load_obj_file_data("./assets/cube.obj");
   // load_obj_file_data("./assets/f22.obj");
+  load_png_texture_data("./assets/cube.png");
 }
 
 void process_input(void) {
