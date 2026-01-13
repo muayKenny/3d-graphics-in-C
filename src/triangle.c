@@ -3,7 +3,8 @@
 #include "swap.h"
 
 void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                               color_t color) {
+                               color_t color)
+{
   // calculate slope_0 and slope_1
   float inv_slope_1 = (float)(x1 - x0) / (y1 - y0);
   float inv_slope_2 = (float)(x2 - x0) / (y2 - y0);
@@ -13,7 +14,8 @@ void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
   float x_end = x0;
 
   // loop all scanlines from y0 to y2
-  for (int y = y0; y <= y2; y++) {
+  for (int y = y0; y <= y2; y++)
+  {
     draw_line(x_start, y, x_end, y, color);
 
     x_start += inv_slope_1;
@@ -22,7 +24,8 @@ void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
 }
 
 void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                            color_t color) {
+                            color_t color)
+{
   float inv_slope_1 = (float)(x2 - x0) / (y2 - y0);
   float inv_slope_2 = (float)(x2 - x1) / (y2 - y1);
 
@@ -31,7 +34,8 @@ void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
   float x_end = x2;
 
   // loop all scanlines from y2 to y0
-  for (int y = y2; y >= y0; y--) {
+  for (int y = y2; y >= y0; y--)
+  {
     draw_line(x_start, y, x_end, y, color);
     x_start -= inv_slope_1;
     x_end -= inv_slope_2;
@@ -39,28 +43,35 @@ void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
 }
 
 void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                          color_t color) {
+                          color_t color)
+{
   // sort vertices by y-coord ascending (y0 < y1 < y2)
-  if (y0 > y1) {
+  if (y0 > y1)
+  {
     int_swap(&y0, &y1);
     int_swap(&x0, &x1);
   }
-  if (y1 > y2) {
+  if (y1 > y2)
+  {
     int_swap(&y1, &y2);
     int_swap(&x1, &x2);
   }
-  if (y0 > y1) {
+  if (y0 > y1)
+  {
     int_swap(&y0, &y1);
     int_swap(&x0, &x1);
   }
 
-  if (y1 == y2) {
+  if (y1 == y2)
+  {
     fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, color);
-
-  } else if (y0 == y1) {
+  }
+  else if (y0 == y1)
+  {
     fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, color);
-
-  } else {
+  }
+  else
+  {
 
     // Calculate (Mx, My) using triangle similarity
     int My = y1;
@@ -76,7 +87,8 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
 
 // Return the barycentric weights alpha, beta, and gamma for point p
 
-vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
+vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p)
+{
   // Find the vectors between the vertices ABC and point p
   vec2_t ac = vec2_sub(c, a);
   vec2_t ab = vec2_sub(b, a);
@@ -106,7 +118,8 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
 
 void draw_texel(int x, int y, color_t *texture, vec4_t point_a, vec4_t point_b,
                 vec4_t point_c, float u0, float v0, float u1, float v1,
-                float u2, float v2) {
+                float u2, float v2)
+{
   vec2_t p = {x, y};
   vec2_t a = vec2_from_vec4(point_a);
   vec2_t b = vec2_from_vec4(point_b);
@@ -119,18 +132,19 @@ void draw_texel(int x, int y, color_t *texture, vec4_t point_a, vec4_t point_b,
   float gamma = weights.z;
 
   // Perform the interpolation of all U and V values using barycentric weights
-  
+
   float interpolated_u;
   float interpolated_v;
 
   float interpolated_reciprocal_w;
 
-  interpolated_u =(u0 / point_a.w)*alpha + (u1 / point_b.w)*beta + (u2 / point_c.w)*gamma;
-  interpolated_v = (v0 / point_a.w)*alpha + (v1 / point_b.w)*beta + (v2 / point_c.w)*gamma;
+  interpolated_u = (u0 / point_a.w) * alpha + (u1 / point_b.w) * beta + (u2 / point_c.w) * gamma;
+  interpolated_v = (v0 / point_a.w) * alpha + (v1 / point_b.w) * beta + (v2 / point_c.w) * gamma;
 
-  interpolated_reciprocal_w = (1/ point_a.w) * alpha + ( 1/ point_b.w) * beta + (1/ point_c.w) *gamma;
+  interpolated_reciprocal_w = (1 / point_a.w) * alpha + (1 / point_b.w) * beta + (1 / point_c.w) * gamma;
 
-  if (interpolated_reciprocal_w == 0.0f) {
+  if (interpolated_reciprocal_w == 0.0f)
+  {
     return;
   }
   interpolated_u /= interpolated_reciprocal_w;
@@ -145,10 +159,10 @@ void draw_texel(int x, int y, color_t *texture, vec4_t point_a, vec4_t point_b,
     interpolated_v = 0.0f;
   if (interpolated_v > 1.0f)
     interpolated_v = 1.0f;
-  
+
   // Map the UV coordinate to the full texture width and height
-  int tex_x = (int)(interpolated_u * (texture_width - 1));
-  int tex_y = (int)(interpolated_v * (texture_height - 1));
+  int tex_x = (int)(interpolated_u * (texture_width - 1)) % texture_width;
+  int tex_y = (int)(interpolated_v * (texture_height - 1)) % texture_height;
 
   draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
 }
@@ -156,9 +170,11 @@ void draw_texel(int x, int y, color_t *texture, vec4_t point_a, vec4_t point_b,
 void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0,
                             float v0, int x1, int y1, float z1, float w1,
                             float u1, float v1, int x2, int y2, float z2,
-                            float w2, float u2, float v2, color_t *texture) {
+                            float w2, float u2, float v2, color_t *texture)
+{
   // We need to sort the vertices by y-coordinate ascending (y0 < y1 < y2)
-  if (y0 > y1) {
+  if (y0 > y1)
+  {
     int_swap(&y0, &y1);
     int_swap(&x0, &x1);
     float_swap(&z0, &z1);
@@ -166,7 +182,8 @@ void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0,
     float_swap(&u0, &u1);
     float_swap(&v0, &v1);
   }
-  if (y1 > y2) {
+  if (y1 > y2)
+  {
     int_swap(&y1, &y2);
     int_swap(&x1, &x2);
     float_swap(&z1, &z2);
@@ -174,7 +191,8 @@ void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0,
     float_swap(&u1, &u2);
     float_swap(&v1, &v2);
   }
-  if (y0 > y1) {
+  if (y0 > y1)
+  {
     int_swap(&y0, &y1);
     int_swap(&x0, &x1);
     float_swap(&z0, &z1);
@@ -186,7 +204,6 @@ void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0,
   v0 = 1 - v0;
   v1 = 1 - v1;
   v2 = 1 - v2;
-
 
   // Create vector points and texture coords after we sort the vertices
   vec4_t point_a = {x0, y0, z0, w0};
@@ -204,17 +221,21 @@ void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0,
   if (y2 - y0 != 0)
     inv_slope_2 = (float)(x2 - x0) / abs(y2 - y0);
 
-  if (y1 - y0 != 0) {
-    for (int y = y0; y <= y1; y++) {
+  if (y1 - y0 != 0)
+  {
+    for (int y = y0; y <= y1; y++)
+    {
       int x_start = x1 + (y - y1) * inv_slope_1;
       int x_end = x0 + (y - y0) * inv_slope_2;
 
-      if (x_end < x_start) {
+      if (x_end < x_start)
+      {
         int_swap(&x_start,
                  &x_end); // swap if x_start is to the right of x_end
       }
 
-      for (int x = x_start; x < x_end; x++) {
+      for (int x = x_start; x < x_end; x++)
+      {
         // Draw our pixel with the color that comes from the texture
         draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2,
                    v2);
@@ -233,17 +254,21 @@ void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0,
   if (y2 - y0 != 0)
     inv_slope_2 = (float)(x2 - x0) / abs(y2 - y0);
 
-  if (y2 - y1 != 0) {
-    for (int y = y1; y <= y2; y++) {
+  if (y2 - y1 != 0)
+  {
+    for (int y = y1; y <= y2; y++)
+    {
       int x_start = x1 + (y - y1) * inv_slope_1;
       int x_end = x0 + (y - y0) * inv_slope_2;
 
-      if (x_end < x_start) {
+      if (x_end < x_start)
+      {
         int_swap(&x_start,
                  &x_end); // swap if x_start is to the right of x_end
       }
 
-      for (int x = x_start; x < x_end; x++) {
+      for (int x = x_start; x < x_end; x++)
+      {
         // Draw our pixel with the color that comes from the texture
         draw_texel(x, y, texture, point_a, point_b, point_c, u0, v0, u1, v1, u2,
                    v2);
