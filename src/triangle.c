@@ -183,6 +183,11 @@ void draw_textured_triangle(int x0, int y0, float z0, float w0, float u0,
     float_swap(&v0, &v1);
   }
 
+  v0 = 1 - v0;
+  v1 = 1 - v1;
+  v2 = 1 - v2;
+
+
   // Create vector points and texture coords after we sort the vertices
   vec4_t point_a = {x0, y0, z0, w0};
   vec4_t point_b = {x1, y1, z1, w1};
