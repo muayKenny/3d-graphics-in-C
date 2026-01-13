@@ -161,8 +161,8 @@ void draw_texel(int x, int y, color_t *texture, vec4_t point_a, vec4_t point_b,
     interpolated_v = 1.0f;
 
   // Map the UV coordinate to the full texture width and height
-  int tex_x = (int)(interpolated_u * (texture_width - 1)) % texture_width;
-  int tex_y = (int)(interpolated_v * (texture_height - 1)) % texture_height;
+  int tex_x = abs((int)(interpolated_u * texture_width)) % texture_width;
+  int tex_y = abs((int)(interpolated_v * texture_height)) % texture_height;
 
   draw_pixel(x, y, texture[(texture_width * tex_y) + tex_x]);
 }
