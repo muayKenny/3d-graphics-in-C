@@ -26,6 +26,7 @@ enum render_method render_method;
 bool is_running = NULL;
 
 int previous_frame_time = 0;
+float delta_time = 0;
 
 void setup(void) {
     // Initialize render mode and triangle culling method
@@ -116,16 +117,18 @@ void update(void) {
         SDL_Delay(time_to_wait);
     }
 
+    delta_time = (SDL_GetTicks() - previous_frame_time /)1000.0;
+
     previous_frame_time = SDL_GetTicks();
 
     triangles_to_render = NULL;
 
     // Change the mesh scale, rotation, and translation values per animation frame
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
-    mesh.rotation.z += 0.01;
+    mesh.rotation.x += 0.01 * delta_time;
+    mesh.rotation.y += 0.01 * delta_time;
+    mesh.rotation.z += 0.01 * delta_time;
     // mesh.translation.x += 0.01;
-    mesh.translation.z = 4.0;
+    mesh.translation.z = 4.0 * delta_time;
 
     // change the camera position per animation frame
     camera.position.x += .008;
