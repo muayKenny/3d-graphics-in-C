@@ -63,6 +63,8 @@ void setup(void) {
     // loads the cube values into the mesh data structure
     load_obj_file_data("./assets/f22.obj");
     load_png_texture_data("./assets/f22.png");
+
+    previous_frame_time = SDL_GetTicks();
 }
 
 void process_input(void) {
@@ -117,7 +119,7 @@ void update(void) {
         SDL_Delay(time_to_wait);
     }
 
-    delta_time = (SDL_GetTicks() - previous_frame_time /)1000.0;
+    delta_time = (SDL_GetTicks() - previous_frame_time) / 1000.0f;
 
     previous_frame_time = SDL_GetTicks();
 
@@ -128,11 +130,12 @@ void update(void) {
     mesh.rotation.y += 0.01 * delta_time;
     mesh.rotation.z += 0.01 * delta_time;
     // mesh.translation.x += 0.01;
-    mesh.translation.z = 4.0 * delta_time;
+    mesh.translation.z = 4.0f;
 
     // change the camera position per animation frame
-    camera.position.x += .008;
-    camera.position.y += .008;
+    // Keep camera fixed while debugging projection/transforms.
+    camera.position.x = 0.0f;
+    camera.position.y = 0.0f;
 
     // create the view matrix looking at a hard coded target point
     vec3_t target = {0, 0, 4.0};
