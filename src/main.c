@@ -9,6 +9,7 @@
 #include "upng.h"
 #include "vector.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_pixels.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -100,12 +101,33 @@ void process_input(void) {
     case SDLK_6:
       render_method = RENDER_TEXTURED_WIRE;
       break;
-    case SDLK_c:
+    case SDLK_x:
       cull_method = CULL_BACKFACE;
       break;
-    case SDLK_d:
+    case SDLK_z:
       cull_method = CULL_NONE;
       break;
+    case SDLK_UP:
+      camera.position.y += 1.0 * delta_time;
+      break;
+    case SDLK_DOWN:
+      camera.position.y -= 1.0 * delta_time;
+      break;
+    case SDLK_w:
+      camera.forward_velocity = vec3_mul(camera.direction, 2.0 * delta_time);
+      camera.position = vec3_add(camera.position, camera.forward_velocity);
+      break;
+    case SDLK_s:
+      camera.forward_velocity = vec3_mul(camera.direction, 2.0 * delta_time);
+      camera.position = vec3_sub(camera.position, camera.forward_velocity);
+      break;
+    case SDLK_a:
+      camera.yaw_angle += 1.0 * delta_time;
+      break;
+    case SDLK_d:
+      camera.yaw_angle -= 1.0 * delta_time;
+      break;
+
     default:
       // Handle other keys
       break;
@@ -134,13 +156,13 @@ void update(void) {
   // mesh.translation.x += 0.01;
   mesh.translation.z = 4.0f;
 
-  // change the camera position per animation frame
-  // Keep camera fixed while debugging projection/transforms.
-  camera.position.x = 0.0f;
-  camera.position.y = 0.0f;
+  vec3_t target = {0,0,1};
 
-  // create the view matrix looking at a hard coded target point
-  vec3_t target = {0, 0, 4.0};
+  mat4_t camera_yaw_rotation = mat4_make_rotation_y(camera.yaw_angle);
+  camera.direction = vec3_from_vec4(mat4_mul_vec4(camera_yaw_rotation, vec4_from_vec3(target)));
+
+  target = vec3_add(camera.position, camera.direction);
+
   vec3_t up_direction = {0, 1, 0};
   mat4_t view_matrix = mat4_look_at(camera.position, target, up_direction);
 
@@ -350,8 +372,8 @@ void render(void) {
 void free_resources(void) {
   array_free(mesh.faces);
   array_free(mesh.vertices);
-  array_free(color_buffer);
-  array_free(z_buffer);
+  free(color_buffer);
+  free(z_buffer);
   upng_free(png_texture);
 }
 
@@ -359,6 +381,10 @@ void free_resources(void) {
 
 int main(void) {
   is_running = initialize_window();
+
+  if (!is_running) {
+    return 1;
+  }
 
   // game loop
   setup();
