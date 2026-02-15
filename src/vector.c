@@ -2,6 +2,13 @@
 #include <math.h>
 
 // Vector 2D Functions
+
+vec2_t vec2_new(float x, float y) {
+    vec2_t vec2 = {.x = x, .y = y};
+    return vec2;
+}
+
+
 float vec2_length(vec2_t v) { return sqrt(v.x * v.x + v.y * v.y); };
 
 vec2_t vec2_add(vec2_t a, vec2_t b) {
@@ -33,6 +40,12 @@ void vec2_normalize(vec2_t *v) {
 }
 
 // Vector 3D Functions
+
+vec3_t vec3_new(float x, float y, float z) {
+    vec3_t vec3 = {x, y, z};
+    return vec3;
+}
+
 float vec3_length(vec3_t v) { return sqrt(v.x * v.x + v.y * v.y + v.z * v.z); };
 
 vec3_t vec3_add(vec3_t a, vec3_t b) {
