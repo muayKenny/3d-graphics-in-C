@@ -160,10 +160,11 @@ void update(void) {
   // mesh.translation.x += 0.01;
   mesh.translation.z = 4.0f;
 
-  vec3_t target = {0,0,1};
+  vec3_t target = {0, 0, 1};
 
   mat4_t camera_yaw_rotation = mat4_make_rotation_y(camera.yaw_angle);
-  camera.direction = vec3_from_vec4(mat4_mul_vec4(camera_yaw_rotation, vec4_from_vec3(target)));
+  camera.direction = vec3_from_vec4(
+      mat4_mul_vec4(camera_yaw_rotation, vec4_from_vec3(target)));
 
   target = vec3_add(camera.position, camera.direction);
 
@@ -184,6 +185,9 @@ void update(void) {
 
   //  loop all triangles faces
   for (int i = 0; i < num_faces; i++) {
+    if (i != 4)
+      continue;
+
     face_t mesh_face = mesh.faces[i];
 
     vec3_t face_vertices[3];
@@ -253,6 +257,12 @@ void update(void) {
         continue;
       }
     }
+
+    // clipping
+    polygon_t polygon =
+        create_polygon_from_triangle(vec3_from_vec4(transformed_vertices[0]),
+                                     vec3_from_vec4(transformed_vertices[1]),
+                                     vec3_from_vec4(transformed_vertices[2]));
 
     // Loop all three vertices to perform projection
     vec4_t projected_points[3];
