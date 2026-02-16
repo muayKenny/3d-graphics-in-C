@@ -53,14 +53,17 @@ void setup(void) {
                           SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 
     // Initialize the perspective projection matrix
-    float fov = M_PI / 3.0; // the same as 180/3, or 60 degrees
-    float aspect = (float)window_height / (float)window_width;
+    float aspecty = (float)window_height / (float)window_width;
+    float aspectx = (float)window_width / (float)window_height;
+    float fovy = M_PI / 3.0; // the same as 180/3, or 60 degrees
+    float fovx = atan(tan(fovy / 2) * aspectx) * 2.0;
+
     float znear = 0.1;
     float zfar = 100.0;
-    proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
+    proj_matrix = mat4_make_perspective(fovy, aspecty, znear, zfar);
 
     // initialize frustum planes
-    init_frustum_planes(fov, znear, zfar);
+    init_frustum_planes(fovx, fovy, znear, zfar);
 
     // manually load the hardcoded texture data from the literal static array
     // mesh_texture = (uint32_t *)REDBRICK_TEXTURE;
