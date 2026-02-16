@@ -1,5 +1,6 @@
 #include "clipping.h"
 #include "math.h"
+#include "texture.h"
 #include "vector.h"
 
 #define NUM_PLANES 6
@@ -64,20 +65,29 @@ void init_frustum_planes(float fovx, float fovy, float z_near, float z_far) {
     frustum_planes[FAR_FRUSTUM_PLANE].normal.z = -1;
 }
 
-polygon_t create_polygon_from_triangle(vec3_t v0, vec3_t v1, vec3_t v2) {
-    polygon_t polygon = {.vertices = {v0, v1, v2}, .num_vertices = 3};
+polygon_t create_polygon_from_triangle(vec3_t v0, vec3_t v1, vec3_t v2, tex2_t t0,
+                                       tex2_t t1, tex2_t t2) {
+    polygon_t polygon = {
+        .vertices = {v0, v1, v2}, .texcoords = {t0, t1, t2}, .num_vertices = 3};
     return polygon;
 };
+
+float float_lerp(float a, float b, float t) { return a + t * (b - a); }
 
 void clip_polygon_againt_plane(polygon_t *polygon, int plane) {
     vec3_t plane_point = frustum_planes[plane].point;
     vec3_t plane_normal = frustum_planes[plane].normal;
 
     vec3_t inside_vertices[MAX_NUM_POLY_VERTICES];
+    tex2_t inside_texcoords[MAX_NUM_POLY_VERTICES];
+
     int num_inside_vertices = 0;
 
     vec3_t *current_vertex = &polygon->vertices[0];
+    tex2_t *current_texcoord = &polygon->texcoords[0];
+
     vec3_t *previous_vertex = &polygon->vertices[polygon->num_vertices - 1];
+    tex2_t *previous_texcoord = &polygon->texcoords[polygon->num_vertices - 1];
 
     float current_dot = 0;
     float previous_dot =
@@ -93,24 +103,36 @@ void clip_polygon_againt_plane(polygon_t *polygon, int plane) {
             intersection_point = vec3_mul(intersection_point, t);
             intersection_point = vec3_add(intersection_point, *previous_vertex);
 
+            tex2_t interpolated_texcoord = {
+                .u = float_lerp(previous_texcoord->u, current_texcoord->u, t),
+                .v = float_lerp(previous_texcoord->v, current_texcoord->v, t),
+            };
+
             inside_vertices[num_inside_vertices] = vec3_clone(&intersection_point);
+            inside_texcoords[num_inside_vertices] =
+                tex2_clone(&interpolated_texcoord);
             num_inside_vertices++;
         }
 
         if (current_dot > 0) {
             inside_vertices[num_inside_vertices] = vec3_clone(current_vertex);
+            inside_texcoords[num_inside_vertices] = tex2_clone(current_texcoord);
             num_inside_vertices++;
         }
 
         previous_dot = current_dot;
         previous_vertex = current_vertex;
+        previous_texcoord = current_texcoord;
+
         current_vertex++;
+        current_texcoord++;
     }
 
     //  copy the list of inside vertices into the destination polygon (the out
     //  parameter)
     for (int i = 0; i < num_inside_vertices; i++) {
         polygon->vertices[i] = vec3_clone(&inside_vertices[i]);
+        polygon->texcoords[i] = tex2_clone(&inside_texcoords[i]);
     }
     polygon->num_vertices = num_inside_vertices;
 }
@@ -134,6 +156,10 @@ void triangles_from_polygon(polygon_t *polygon, triangle_t triangles[],
         triangles[i].points[0] = vec4_from_vec3(polygon->vertices[index0]);
         triangles[i].points[1] = vec4_from_vec3(polygon->vertices[index1]);
         triangles[i].points[2] = vec4_from_vec3(polygon->vertices[index2]);
+
+        triangles[i].texcoords[0] = polygon->texcoords[index0];
+        triangles[i].texcoords[1] = polygon->texcoords[index1];
+        triangles[i].texcoords[2] = polygon->texcoords[index2];
     }
     *num_triangles = polygon->num_vertices - 2;
 }

@@ -14,8 +14,9 @@ extern int texture_height;
 extern uint32_t *mesh_texture;
 extern const uint8_t REDBRICK_TEXTURE[];
 
-extern upng_t* png_texture;
+extern upng_t *png_texture;
 
-void load_png_texture_data(char* filename);
+void load_png_texture_data(char *filename);
+tex2_t tex2_clone(tex2_t *t);
 
 #endif

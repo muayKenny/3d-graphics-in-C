@@ -259,10 +259,11 @@ void update(void) {
         }
 
         // clipping
-        polygon_t polygon =
-            create_polygon_from_triangle(vec3_from_vec4(transformed_vertices[0]),
-                                         vec3_from_vec4(transformed_vertices[1]),
-                                         vec3_from_vec4(transformed_vertices[2]));
+        polygon_t polygon = create_polygon_from_triangle(
+            vec3_from_vec4(transformed_vertices[0]),
+            vec3_from_vec4(transformed_vertices[1]),
+            vec3_from_vec4(transformed_vertices[2]), mesh_face.a_uv, mesh_face.b_uv,
+            mesh_face.c_uv);
         clip_polygon(&polygon);
 
         triangle_t triangles_after_clipping[MAX_NUM_POLY_TRIANGLES];
@@ -313,9 +314,12 @@ void update(void) {
                          projected_points[2].z, projected_points[2].w}
 
                     },
-                .texcoords = {{mesh_face.a_uv.u, mesh_face.a_uv.v},
-                              {mesh_face.b_uv.u, mesh_face.b_uv.v},
-                              {mesh_face.c_uv.u, mesh_face.c_uv.v}},
+                .texcoords = {{triangle_after_clipping.texcoords[0].u,
+                               triangle_after_clipping.texcoords[0].v},
+                              {triangle_after_clipping.texcoords[1].u,
+                               triangle_after_clipping.texcoords[1].v},
+                              {triangle_after_clipping.texcoords[2].u,
+                               triangle_after_clipping.texcoords[2].v}},
                 .color = triangle_color
 
             };
