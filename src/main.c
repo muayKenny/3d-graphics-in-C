@@ -184,8 +184,6 @@ void update(void) {
 
     //  loop all triangles faces
     for (int i = 0; i < num_faces; i++) {
-        if (i != 4)
-            continue;
 
         face_t mesh_face = mesh.faces[i];
 
@@ -264,59 +262,65 @@ void update(void) {
                                          vec3_from_vec4(transformed_vertices[2]));
         clip_polygon(&polygon);
 
-        printf("number of polygon vertices after clipping: %d\n",
-               polygon.num_vertices);
+        triangle_t triangles_after_clipping[MAX_NUM_POLY_TRIANGLES];
+        int num_triangles_after_clipping = 0;
 
-        // Loop all three vertices to perform projection
-        vec4_t projected_points[3];
-        for (int j = 0; j < 3; j++) {
+        triangles_from_polygon(&polygon, triangles_after_clipping,
+                               &num_triangles_after_clipping);
 
-            // project current vertex
-            projected_points[j] =
-                mat4_mul_vec4_project(proj_matrix, transformed_vertices[j]);
+        for (int t = 0; t < num_triangles_after_clipping; t++) {
+            triangle_t triangle_after_clipping = triangles_after_clipping[t];
 
-            // scale into the view
-            projected_points[j].x *= (window_width / 2.0);
-            projected_points[j].y *= (window_height / 2.0);
+            // Loop all three vertices to perform projection
+            vec4_t projected_points[3];
+            for (int j = 0; j < 3; j++) {
+                // project current vertex
+                projected_points[j] = mat4_mul_vec4_project(
+                    proj_matrix, triangle_after_clipping.points[j]);
 
-            // Invert the Y values because our obj comes with it's Y Values flipped
-            projected_points[j].y *= -1;
+                // scale into the view
+                projected_points[j].x *= (window_width / 2.0);
+                projected_points[j].y *= (window_height / 2.0);
 
-            // translate projected points to the middle of the screen.
-            projected_points[j].x += (window_width / 2.0);
-            projected_points[j].y += (window_height / 2.0);
-        }
+                // Invert the Y values because our obj comes with it's Y Values
+                // flipped
+                projected_points[j].y *= -1;
 
-        // Calculate the shade intensity based on how aligned is the face normal and
-        // the light ray
-        float light_intensity_factor = -vec3_dot(normal, light.direction);
+                // translate projected points to the middle of the screen.
+                projected_points[j].x += (window_width / 2.0);
+                projected_points[j].y += (window_height / 2.0);
+            }
 
-        uint32_t triangle_color =
-            light_apply_intensity(mesh_face.color, light_intensity_factor);
+            // Calculate the shade intensity based on how aligned is the face normal
+            // and the light ray
+            float light_intensity_factor = -vec3_dot(normal, light.direction);
 
-        triangle_t projected_triangle = {
-            .points =
-                {
+            uint32_t triangle_color =
+                light_apply_intensity(mesh_face.color, light_intensity_factor);
 
-                    {projected_points[0].x, projected_points[0].y,
-                     projected_points[0].z, projected_points[0].w},
-                    {projected_points[1].x, projected_points[1].y,
-                     projected_points[1].z, projected_points[1].w},
-                    {projected_points[2].x, projected_points[2].y,
-                     projected_points[2].z, projected_points[2].w}
+            triangle_t triangle_to_render = {
+                .points =
+                    {
 
-                },
-            .texcoords = {{mesh_face.a_uv.u, mesh_face.a_uv.v},
-                          {mesh_face.b_uv.u, mesh_face.b_uv.v},
-                          {mesh_face.c_uv.u, mesh_face.c_uv.v}},
-            .color = triangle_color
+                        {projected_points[0].x, projected_points[0].y,
+                         projected_points[0].z, projected_points[0].w},
+                        {projected_points[1].x, projected_points[1].y,
+                         projected_points[1].z, projected_points[1].w},
+                        {projected_points[2].x, projected_points[2].y,
+                         projected_points[2].z, projected_points[2].w}
 
-        };
+                    },
+                .texcoords = {{mesh_face.a_uv.u, mesh_face.a_uv.v},
+                              {mesh_face.b_uv.u, mesh_face.b_uv.v},
+                              {mesh_face.c_uv.u, mesh_face.c_uv.v}},
+                .color = triangle_color
 
-        //  save the projected triangle in the array of triangles to render.
-        if (num_triangles_to_render < MAX_NUM_TRIANGLES) {
-            triangles_to_render[num_triangles_to_render] = projected_triangle;
-            num_triangles_to_render++;
+            };
+
+            //  save the projected triangle in the array of triangles to render.
+            if (num_triangles_to_render < MAX_NUM_TRIANGLES) {
+                triangles_to_render[num_triangles_to_render++] = triangle_to_render;
+            }
         }
     }
 }
